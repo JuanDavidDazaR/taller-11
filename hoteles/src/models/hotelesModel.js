@@ -5,7 +5,7 @@ const connection = mysql.createPool({
     host: 'localhost',
     user: 'root',
     password: '',
-    port:'3307',
+    port: '3307',
     database: 'hotelesDB'
 });
 
@@ -18,6 +18,12 @@ async function traerHoteles() {
 async function traerHotel(id) {
     const result = await connection.query('SELECT * FROM hoteles WHERE id = ?', id);
     return result[0];
+}
+
+
+async function traerHotelNombre(nombre) {
+    const [result] = await connection.query('SELECT * FROM hoteles WHERE nombre = ?', [nombre]);
+    return result[0]; // Devolver el primer resultado o null si no se encuentra
 }
 
 
@@ -40,5 +46,5 @@ async function borrarHotel(id) {
 
 
 module.exports = {
-    traerHoteles, traerHotel, actualizarHotel, crearHotel, borrarHotel
+    traerHoteles, traerHotel, traerHotelNombre, actualizarHotel, crearHotel, borrarHotel
 }
