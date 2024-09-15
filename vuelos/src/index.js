@@ -1,27 +1,14 @@
 const express = require('express');
-const router = express.Router();
-const vuelosModel = require('../models/vueloModel');
+const vuelosController = require("./controllers/vuelosController");
+const morgan = require('morgan'); 
+const app = express();
+app.use(morgan('dev'));
+app.use(express.json());
 
-router.get('/vuelos', async (req, res) => {
-    const vuelos = await vuelosModel.traerVuelos();
-    res.json(vuelos);
+
+app.use(usuariosController);
+
+
+app.listen(3002, () => {
+  console.log('Microservicio Vuelos ejecutandose en el puerto 3002');
 });
-
-router.get('/vuelos/:id', async (req, res) => {
-    const { id } = req.params;
-
-    const vuelo = await vuelosModel.traerVuelo(id);
-    res.json(vuelo);
-});
-
-router.post('/vuelos', async (req, res) => {
-    const ciudadOrigen = req.body.ciudadOrigen;
-    const ciudadDestino = req.body.ciudadDestino;
-    const capacidad = req.body.capacidad;
-    const costo = req.body.costo;
-
-    const result = await vuelosModel.crearVuelo(ciudadOrigen, ciudadDestino, capacidad, costo);
-    res.json({ message: result });
-});
-
-module.exports = router;
