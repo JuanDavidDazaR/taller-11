@@ -9,6 +9,6 @@ app.use(express.json());
 app.use(hotelesController);
 
 
-app.listen(3007, () => {
-    console.log('Microservicio hoteles ejecutandose en el puerto 3007');
+app.listen(3003, () => {
+    console.log('Microservicio hoteles ejecutandose en el puerto 3003');
 });
