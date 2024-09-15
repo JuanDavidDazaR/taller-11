@@ -20,7 +20,7 @@ router.get('/usuarios/:usuario', async (req, res) => {
         if (result.length > 0) {
             res.json(result[0]);
         } else {
-            res.send(`Error al buscar al usuario: ${req.params.usaurios}`);
+            res.send(`Error al buscar al usuario: ${req.params.usuario}`);
         }
     } catch (error) {
         res.send("Error al buscar el usuario");

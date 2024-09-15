@@ -1,12 +1,12 @@
 const express = require('express');
-const vuelosController = require("./controllers/vuelosController");
+const vuelosController = require("./controllers/vueloController");
 const morgan = require('morgan'); 
 const app = express();
 app.use(morgan('dev'));
 app.use(express.json());
 
 
-app.use(usuariosController);
+app.use(vuelosController);
 
 
 app.listen(3002, () => {
