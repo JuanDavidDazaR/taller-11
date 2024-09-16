@@ -29,7 +29,7 @@ async function crearPlan(plan) {
     const usuario = plan.usuario;
     const costo = plan.costo;
 
-    const result = await connection.query('INSERT INTO plan VALUES (null, ?, ?, ?, ?, ?)', [ciudad, vuelo, hotel, usuario, costo]);
+    const result = await connection.query('INSERT INTO plan VALUES (null, ?, ?, ?, ?, ?)', [ciudad, vuelo, hotel, costo, usuario]);
     return result;
 
 }
