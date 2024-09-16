@@ -27,7 +27,7 @@ router.put('/vuelos/:id', async (req, res) => {
     const { id } = req.params;
     const { capacidad } = req.body;
 
-    const result = await vuelosModel.actualizarCapacidad(id, capacidad);
+    const result = await vuelosModel.actualizarVuelo(id, capacidad);
     res.json({ message: result });
 });
 

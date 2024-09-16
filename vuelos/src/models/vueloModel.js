@@ -39,15 +39,9 @@ async function crearVuelo(ciudadOrigen, ciudadDestino, capacidad, costo) {
     throw error;
     }
 }
-async function actualizarCapacidad(id, capacidad) {
-    try {
-        const result = await connection.query('UPDATE micro_vuelos SET capacidad = ? WHERE id = ?', [capacidad, id]);
-        console.log(result[0]);
-        return `La capacidad del vuelo con ID ${id} ha sido actualizada a ${capacidad}.`;
-    } catch (error) {
-        console.error('Error al actualizar vuelo:', error);
-        throw error;
-    }
+async function actualizarVuelo(id, capacidad) {
+    const result = await connection.query('UPDATE vuelo SET capacidad = ? WHERE id = ?', [capacidad, id]);
+    return result;
 }
 
 
@@ -55,4 +49,4 @@ module.exports = {
     traerVuelos,
     traerVuelo,
     crearVuelo,
-    actualizarCapacidad,}
+    actualizarVuelo,}
