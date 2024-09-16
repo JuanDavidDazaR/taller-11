@@ -10,7 +10,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 // Asegúrate de que el controlador esté en la ruta correcta y configurado
-app.use('/planes', planesController);
+app.use(planesController);
 
 app.listen(3004, () => {
   console.log('Microservicio Planes ejecutándose en el puerto 3004');
