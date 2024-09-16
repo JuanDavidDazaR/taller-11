@@ -23,5 +23,12 @@ router.post('/vuelos', async (req, res) => {
     const result = await vuelosModel.crearVuelo(ciudadOrigen, ciudadDestino, capacidad, costo);
     res.json({ message: result });
 });
+router.put('/vuelos/:id', async (req, res) => {
+    const { id } = req.params;
+    const { capacidad } = req.body;
+
+    const result = await vuelosModel.actualizarCapacidad(id, capacidad);
+    res.json({ message: result });
+});
 
 module.exports = router;
