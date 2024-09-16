@@ -18,7 +18,7 @@
     if (count($resp) != 0){
         session_start();
         $_SESSION["usuario"]=$user;
-        if ($user == "admin1"){ 
+        if ($user == "admin"){ 
             echo "admin";
             header("Location:admin.php");
         } 
