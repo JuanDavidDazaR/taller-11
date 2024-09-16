@@ -75,166 +75,166 @@ router.get('/planes/:id', async (req, res) => {
 
 
 
-// Función para obtener el ID del hotel a partir de su nombre
-async function obtenerIdHotelPorNombre(nombre) {
-    try {
-        const response = await axios.post('http://localhost:3003/hotelesnombre', { nombre });
-        const hotel = response.data;
-        return hotel ? hotel.id : null;
-    } catch (error) {
-        console.error('Error al obtener el ID del hotel:', error);
-        return null;
-    }
-}
 
-// Función para obtener la ciudad del hotel a partir del ID del hotel
-async function obtenerCiudadPorHotel(hotelId) {
-    try {
-        const response = await axios.get(`http://localhost:3003/hoteles/${hotelId}`);
-        const hotel = response.data;
-        return hotel ? hotel.ciudad : 'Ciudad desconocida';
-    } catch (error) {
-        console.error('Error al obtener la ciudad del hotel:', error);
-        return 'Ciudad desconocida';
-    }
-}
 
 // Función para verificar disponibilidad de servicios
-async function verificarDisponibilidadServicios(vueloId, hotelId) {
+async function verificarDisponibilidad(vueloId, hotelId) {
   let vueloDisponible = true;
   let hotelDisponible = true;
 
   if (vueloId) {
-      const vueloResponse = await axios.get(`http://localhost:3002/vuelos/${vueloId}`);
-      vueloDisponible = vueloResponse.data.capacidad > 0;
+    const vueloResponse = await fetch(`http://localhost:3002/vuelos/${vueloId}`);
+    const vueloData = await vueloResponse.json();
+    vueloDisponible = vueloData.capacidad > 0;
   }
 
   if (hotelId) {
-      const hotelResponse = await axios.get(`http://localhost:3003/hoteles/${hotelId}`);
-      hotelDisponible = hotelResponse.data.capacidad > 0;
+    const hotelResponse = await fetch(`http://localhost:3003/hoteles/${hotelId}`);
+    const hotelData = await hotelResponse.json();
+    hotelDisponible = hotelData.capacidad > 0;
   }
 
   return vueloDisponible && hotelDisponible;
 }
 
 // Función para actualizar la capacidad del vuelo
-async function actualizarVuelo(vuelo) {
+async function actualizarVuelo(vueloId) {
   try {
-      const response = await axios.get(`http://localhost:3002/vuelos/${vuelo.id}`);
-      const capacidadActual = response.data.capacidad;
-      const nuevaCapacidad = capacidadActual - 1;
+    const response = await fetch(`http://localhost:3002/vuelos/${vueloId}`);
+    const vueloData = await response.json();
+    const nuevaCapacidad = vueloData.capacidad - 1;
 
-      await axios.put(`http://localhost:3002/vuelos/${vuelo.id}`, {
-          capacidad: nuevaCapacidad
-      });
+    await fetch(`http://localhost:3002/vuelos/${vueloId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ capacidad: nuevaCapacidad }),
+    });
   } catch (error) {
-      console.error('Error al actualizar la capacidad del vuelo:', error);
+    console.error('Error al actualizar la capacidad del vuelo:', error);
   }
 }
 
 // Función para actualizar la capacidad del hotel
-async function actualizarHotel(hotel) {
+async function actualizarHotel(hotelId) {
   try {
-      const response = await axios.get(`http://localhost:3003/hoteles/${hotel.id}`);
-      const capacidadActual = response.data.capacidad;
-      const nuevaCapacidad = capacidadActual - 1;
+    const response = await fetch(`http://localhost:3003/hoteles/${hotelId}`);
+    const hotelData = await response.json();
+    const nuevaCapacidad = hotelData.capacidad - 1;
 
-      await axios.put(`http://localhost:3003/hoteles/${hotel.id}`, {
-          capacidad: nuevaCapacidad
-      });
+    await fetch(`http://localhost:3003/hoteles/${hotelId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ capacidad: nuevaCapacidad }),
+    });
   } catch (error) {
-      console.error('Error al actualizar la capacidad del hotel:', error);
+    console.error('Error al actualizar la capacidad del hotel:', error);
   }
 }
 
 // Función para calcular costo del plan
-async function calcularCosto(vuelo, hotel) {
-  // Suponiendo que las URLs de las APIs son:
-  const urlVuelo = `http://localhost:3002/vuelos/${vuelo.id}`;
-  const urlHotel = `http://localhost:3003/hoteles/${hotel.id}`;
-
+async function calcularCosto(vueloId, hotelId) {
   try {
-    // Peticiones paralelas utilizando Promise.all
-    const [responseVuelo, responseHotel] = await Promise.all([
-      axios.get(urlVuelo),
-      axios.get(urlHotel)
+    const [vueloResponse, hotelResponse] = await Promise.all([
+      fetch(`http://localhost:3002/vuelos/${vueloId}`),
+      fetch(`http://localhost:3003/hoteles/${hotelId}`)
     ]);
 
-    const costoVuelo = responseVuelo.data.costo;
-    const costoHotel = responseHotel.data.costo;
+    const vueloData = await vueloResponse.json();
+    const hotelData = await hotelResponse.json();
+
+    console.log('Vuelo data:', vueloData);  // Verifica la estructura de la respuesta
+
+    // Accede al primer elemento del array de vuelo
+    const costoVuelo = vueloData[0]?.costo;  
+    const costoHotel = hotelData.costo;
+
+    console.log('Costo vuelo:', costoVuelo);
+    console.log('Costo hotel:', costoHotel);
+
+    // Validar que ambos costos sean números
+    if (isNaN(costoVuelo) || isNaN(costoHotel)) {
+      console.error('Costo de vuelo u hotel no es un número válido.');
+      return NaN;
+    }
 
     return costoVuelo + costoHotel;
   } catch (error) {
     console.error('Error al obtener los costos:', error);
-    return null;
+    return NaN;
   }
 }
 
 
-// Controlador para crear un plan de viaje
+
+
 // Controlador para crear un plan de viaje
 router.post('/planes', async (req, res) => {
-  const { vuelo, nombreHotel, username } = req.body;
+  const { vuelo, nombreHotel, usuario } = req.body;
 
-  // Validación de entrada
-  if (!vuelo || typeof vuelo !== 'object' || !vuelo.id || !nombreHotel || !username) {
-      return res.status(400).json({ error: 'Datos incompletos o incorrectos' });
+  if (!vuelo || typeof vuelo !== 'string' || !nombreHotel || !usuario) {
+    return res.status(400).json({ error: 'Datos incompletos o incorrectos' });
   }
 
   try {
-      // Obtener el ID del hotel a partir del nombre
-      const hotelId = await obtenerIdHotelPorNombre(nombreHotel);
+    // Obtener el ID del hotel a partir del nombre
+    const hotelResponse = await fetch(`http://localhost:3003/hoteles?nombre=${nombreHotel}`);
+    const hotelData = await hotelResponse.json();
+    const hotelId = hotelData.length > 0 ? hotelData[0].id : null;
 
-      if (!hotelId) {
-          return res.status(404).json({ error: 'Hotel no encontrado.' });
-      }
+    if (!hotelId) {
+      return res.status(404).json({ error: 'Hotel no encontrado.' });
+    }
 
-      // Obtener la ciudad del hotel
-      const ciudad = await obtenerCiudadPorHotel(hotelId);
+    // Obtener la ciudad del hotel
+    const ciudad = hotelData[0].ciudad;
 
-      // Verificar disponibilidad
-      const disponible = await verificarDisponibilidadServicios(vuelo.id, hotelId);
+    // Verificar disponibilidad
+//const disponible = await verificarDisponibilidad(vuelo, hotelId);
 
-      if (!disponible) {
-          return res.status(400).json({ error: 'Vuelo o hotel no disponible' });
-      }
+   // if (!disponible) {
+   //   return res.status(400).json({ error: 'Vuelo o hotel no disponible' });
+    //}
 
-      // Calcular costo
-      const costoTotal = await calcularCosto(vuelo, hotelId);
+    // Calcular costo
+    const costoTotal = await calcularCosto(vuelo, hotelId);
 
-      if (costoTotal === null) {
-          return res.status(500).json({ error: 'Error al calcular el costo.' });
-      }
+    if (isNaN(costoTotal) || costoTotal === null) {
+      return res.status(500).json({ error: 'Error en el cálculo del costo.' });
+    }
 
-      // Crear el plan utilizando la función crearPlan
-      const nuevoPlan = {
-          ciudad,
-          vuelo,
-          hotel: nombreHotel, // Guardar el nombre del hotel en lugar del ID
-          usuario: usuario,   // Guardar el username en lugar del ID
-          costo: costoTotal
-      };
+    // Si el costo es válido, continúa con la inserción
+    const nuevoPlan = {
+      cliente: usuario,
+      ciudad,
+      vuelo,
+      hotel: nombreHotel,
+      costo: costoTotal
+    };
 
-      const resultado = await crearPlan(nuevoPlan);
 
-      if (resultado.error) {
-          return res.status(400).json({ error: resultado.error });
-      }
+    // Crear el plan
+    const plan = {
+      cliente: usuario,
+      ciudad: ciudad,
+      vuelo: vuelo,
+      hotel: nombreHotel,
+      costo: costoTotal,
+    };
 
-      // Actualizar la capacidad del vuelo
-      await actualizarVuelo(vuelo);
+    const resultado = await planesModel.crearPlan(plan);
 
-      // Actualizar la capacidad del hotel
-      await actualizarHotel({ id: hotelId });
+    // Actualizar la capacidad del vuelo y el hotel
+    await actualizarVuelo(vuelo);
+    await actualizarHotel(hotelId);
 
-      return res.status(201).json({ mensaje: 'Plan de viaje creado exitosamente', plan: resultado });
+    return res.json({ mensaje: 'Plan de viaje creado exitosamente', plan: resultado });
   } catch (error) {
-      console.error('Error al crear el plan:', error);
-      return res.status(500).json({ error: 'Error al crear el plan' });
+    console.error('Error al crear el plan:', error);
+    return res.status(500).json({ error: 'Error al crear el plan' });
   }
 });
 
 
 
-
 module.exports = router;
+
